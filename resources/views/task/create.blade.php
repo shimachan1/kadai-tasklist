@@ -23,7 +23,7 @@
 
                 <div class="form-group">
                     {!! Form::label('content', 'メッセージ:') !!}
-                    {!! Form::text('content', null, ['class' => 'form-control']) !!}
+                    {!! Form::text('content', null, ['class' => 'form-control']) !!}Tasklist
                 </div>
         
                 {!! Form::submit('投稿', ['class' => 'btn btn-primary']) !!}

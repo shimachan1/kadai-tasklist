@@ -16,11 +16,22 @@ class TasksController extends Controller
     public function index()
     // getでtasklist/にアクセスされた場合の「一覧表示処理」
     {
-        $tasks = Task::all();
+        //ログインしているかしていないかを判断する
 
-        return view('task.index', [
-            'tasks' => $tasks,
-        ]);
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+            
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
+
+            return view('task.index',$data);
+        }else{
+            return view('welcome');
+        }
+        
     }
 
     /**
@@ -51,10 +62,11 @@ class TasksController extends Controller
             'content' => 'required|max:191',
         ]);
 
-        $tasks = new Task;
-        $tasks->status = $request->status;    // 追加
-        $tasks->content = $request->content;
-        $tasks->save();
+        $request->user()->tasks()->create([
+            'content' => $request->content,
+            'status' => $request->status,
+        ]);
+
 
         return redirect('/');
     }
@@ -69,10 +81,13 @@ class TasksController extends Controller
     public function show($id)
     {
         $tasks = Task::find($id);
-
-        return view('task.show', [
-            'tasks' => $tasks,
-        ]);
+        if (\Auth::id() === $tasks->user_id) {
+            return view('task.show', [
+                'tasks' => $tasks,
+            ]);
+        }else{
+            return redirect('/');
+        }
     }
     /**
      * Show the form for editing the specified resource.
@@ -84,10 +99,14 @@ class TasksController extends Controller
     public function edit($id)
     {
         $tasks = Task::find($id);
+        if (\Auth::id() === $tasks->user_id) {
+            return view('task.edit', [
+                'tasks' => $tasks,
+            ]);
+        }else{
+            return redirect('/');
+        }
 
-        return view('task.edit', [
-            'tasks' => $tasks,
-        ]);
     }
     /**
      * Update the specified resource in storage.
